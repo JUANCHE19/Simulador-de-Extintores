@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Centro de Formación y Entrenamiento – Bomberos Yumbo | Simulador de Extintores</title>
+
+<style>
+:root{
+  --bg:#0f1113;
+  --panel:#141617;
+  --accent:#e33b3b;
+  --muted:#bdbdbd;
+}
+
+*{ box-sizing:border-box }
+
+body{
+  margin:0;
+  font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  background-image:url('https://img1.wallspic.com/previews/4/9/6/4/1/114694/114694-fuego-x750.jpg');
+  background-size:cover;
+  background-position:center;
+}
+
+header{
+  max-width:1100px;
+  margin:10px auto;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.logo-header{ height:50px; }
+
+h1{ font-size:1.1rem; color:#fff; margin:0 }
+#meta{ display:flex; gap:12px; color:var(--muted); font-weight:700 }
+
+main{
+  max-width:1100px;
+  margin:10px auto;
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:16px;
+}
+
+@media(max-width:900px){ main{ grid-template-columns:1fr; } }
+
+.stage{
+  background:#111;
+  border-radius:12px;
+  padding:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.6);
+}
+
+#fireWrap{ position:relative; border-radius:10px; overflow:hidden }
+#fireCanvas{ width:100%; height:auto; background:#000 }
+
+.panel-right{
+  background:var(--panel);
+  padding:12px;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+#casoBox{
+  background:#111;
+  color:#fff;
+  padding:10px;
+  border-radius:8px;
+  min-height:70px;
+  text-align:center;
+  font-weight:600;
+}
+
+#extintoresWrap{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center }
+
+.extintor{
+  width:90px;
+  background:#eee;
+  border-radius:10px;
+  padding:6px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.extintor.selected{ outline:3px solid rgba(0,200,255,.5) }
+.ext-img{ width:60px }
+.ext-label{ font-size:.75rem; font-weight:800 }
+
+.controls{ display:flex; gap:8px; justify-content:center }
+button{ background:var(--accent); color:#fff; border:0; padding:8px 12px; border-radius:8px; font-weight:800; cursor:pointer }
+button.secondary{ background:#333; color:var(--muted) }
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.8);
+  color:#fff;
+  padding:8px 14px;
+  border-radius:20px;
+  display:none;
+  z-index:9999;
+}
+
+.mascota-wrap{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:80px;
+}
+
+.mascota{
+  width:100%;
+  animation:flotar 4s ease-in-out infinite;
+}
+
+@keyframes flotar{
+  0%{ transform:translateY(0) }
+  50%{ transform:translateY(-6px) }
+  100%{ transform:translateY(0) }
+}
+
+/* ===== INTRO MINI TARJETA ===== */
+.intro-modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+}
+
+.intro-box{
+  background:#fff;
+  width:220px;        /* 🔥 tamaño REAL y fijo */
+  padding:10px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.3);
+}
+
+.intro-mascota{
+  width:45px;         /* 🔥 mascota pequeña */
+  margin-bottom:6px;
+}
+
+.intro-box h2{
+  font-size:.85rem;
+  margin:4px 0;
+}
+
+.intro-box p{
+  font-size:.7rem;    /* 🔥 texto muy compacto */
+  line-height:1.3;
+  margin:0;
+}
+
+.intro-box button{
+  margin-top:8px;
+  padding:5px 10px;
+  font-size:.7rem;
+  border-radius:6px;
+  border:none;
+  background:#e33b3b;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+<div class="intro-modal" id="intro">
+  <div class="intro-box">
+    <img src="https://i.ibb.co/ds9zCLdF/acevedo11.png" class="intro-mascota">
+    <h2>¿Cómo jugar?</h2>
+    <p>
+1️⃣ Elige el extintor correcto<br>
+2️⃣ Mantén clic y apunta al fuego<br>
+3️⃣ Evita perder vidas
+    </p>
+    <button onclick="cerrarIntro()">Iniciar</button>
+  </div>
+</div>
+
+<header>
+  <img src="https://www.bomberosyumbo.net.co/wp-content/uploads/2022/07/logo-bomberos-yumbo.png" class="logo-header" alt="Bomberos Yumbo">
+<h1>Centro de Formación de Bomberos Yumbo</h1> 
+ <h1>Simulador de Incendios con Extintores</h1>
+
+  <div id="meta">
+    <div>Puntaje: <span id="puntaje">0</span></div>
+    <div>Nivel: <span id="nivel">1</span></div>
+    <div>Vidas: <span id="vidas">3</span></div>
+  </div>
+</header>
+
+<main>
+<section class="stage">
+  <div id="casoBox">
+  <div id="progreso" style="font-size:.75rem;color:#bdbdbd;margin-bottom:4px;"></div>
+  <div id="textoCaso"></div>
+</div>
+
+  <div id="fireWrap">
+    <canvas id="fireCanvas" width="720" height="480"></canvas>
+  </div>
+</section>
+
+<aside class="panel-right">
+  <strong style="color:var(--muted)">Seleccione el extintor</strong>
+
+  <div id="extintoresWrap">
+    <div class="extintor" data-ext="A"><img class="ext-img" src="https://i.ibb.co/PGh2K3ph/A.jpg" alt="A" border="0" "/><div class="ext-label">A</div></div>
+    <div class="extintor" data-ext="BC"><img class="ext-img" src="https://i.ibb.co/fd7TSRc0/BC1.jpg" alt="BC1" border="0" /><div class="ext-label">BC</div></div>
+    <div class="extintor" data-ext="ABC"><img class="ext-img" src="https://i.ibb.co/ccnHvNvx/ABC.jpg" alt="ABC" border="0" "/><div class="ext-label">ABC</div></div>
+    <div class="extintor" data-ext="C"><img class="ext-img" src="https://i.ibb.co/GvKVyNbv/CO2.jpg" alt="CO2" border="0" /><div class="ext-label">CO₂</div></div>
+    <div class="extintor" data-ext="K"><img class="ext-img" src="https://i.ibb.co/Q7kjQmkf/K.jpg" alt="K" border="0" /><div class="ext-label">K</div></div>
+    <div class="extintor" data-ext="D"><img class="ext-img" src="https://i.ibb.co/HfDFz2VM/D.jpg" alt="D" border="0" /><div class="ext-label">D</div></div>
+  </div>
+
+  <div class="controls">
+    <button id="reiniciar">Reiniciar</button>
+    <button id="siguiente" class="secondary">Siguiente</button>
+  </div>
+</aside>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="mascota-wrap">
+  <img src="https://i.ibb.co/ds9zCLdF/acevedo11.png" class="mascota" alt="Mascota Bomberos Yumbo">
+</div>
+<!-- ===== MODAL FINAL FELICITACIONES ===== -->
+<div id="finalModal" class="intro-modal" style="display:none;">
+  <div class="intro-box">
+    <img src="https://i.ibb.co/ds9zCLdF/acevedo11.png" class="intro-mascota">
+    <h2>🎉 ¡Felicitaciones!</h2>
+    <p>
+      Has completado con éxito todos los escenarios.<br>
+      Excelente trabajo controlando los incendios 🧯🔥
+    </p>
+    <button onclick="reiniciar()">🔁 Repetir entrenamiento</button>
+  </div>
+
+  <!-- Confeti -->
+  <canvas id="confettiCanvas" style="
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    pointer-events:none;
+  "></canvas>
+</div>
+
+<!-- MODAL INSTRUCCIONES -->
+<div id="introModal" class="intro-modal">
+  <div class="intro-box">
+    <img src="https://i.ibb.co/ds9zCLdF/acevedo11.png" class="intro-mascota">
+    <h2>🧯Bienvenidos al Simulador de Extintores</h2>
+    <p> 
+	Desde el Centro De Formación y Entrenamiento de Bomberos Yumbo tenemos una  misión para ti, selecciona el extintor correcto según el tipo de incendio.<br><br>
+      👉 Selecciona un extintor.<br>
+      👉 Haz clic y arrastra sobre el fuego.<br>
+      👉 Si fallas, pierdes vidas.<br>
+      👉 Si aciertas, avanzas de nivel.<br><br>
+      🚨 Si pierdes todas las vidas, el entrenamiento termina.
+    </p>
+    <button id="btnIniciar">🚒 Iniciar entrenamiento</button>
+  </div>
+</div>
+
+
+<script>
+/*************** CONFIGURACIÓN PEDAGÓGICA ****************/
+const casos = [
+  // ===== CLASE A =====
+  {
+    texto:"📄 Papelera incendiada en oficina administrativa",
+    fireType:"papel",
+    clase:"A",
+    imagen:"https://i.ibb.co/v4JYr07C/papelera.jpg"
+  },
+  {
+    texto:"🪵Arrume de estibas ardiendo",
+    fireType:"papel",
+    clase:"A",
+    imagen:"https://i.ibb.co/rRg12xYV/estibas.png"
+  },
+  {
+    texto:"📚 Archivo documental en combustión",
+    fireType:"papel",
+    clase:"A",
+    imagen:"https://i.ibb.co/5gTscx9w/archivo-documental.jpg"
+  },
+  {
+    texto:"📦 Cajas de carton en llamas",
+    fireType:"papel",
+    clase:"A",
+    imagen:"https://i.ibb.co/99JWHHM9/cajas-de-carton.png"
+  },
+
+  // ===== CLASE B =====
+  {
+    texto:"🛢️ Derrame e incendio de gasolina en vehiculo cisterna",
+    fireType:"liquidos",
+    clase:"B",
+    imagen:"https://i.ibb.co/LWR8HBz/gasolina-derrame.png"
+  },
+  {
+    texto:"🚗 Incendio en montacarga",
+    fireType:"liquidos",
+    clase:"B",
+    imagen:"https://i.ibb.co/k6Gffv82/monta-carga.jpg"
+  },
+  {
+    texto:"🧴 Envases con solventes inflamables ardiendo",
+    fireType:"liquidos",
+    clase:"B",
+    imagen:"https://i.ibb.co/Xr7Fn92L/solventes.jpg"
+  },
+  {
+    texto:"Incendio en tanques de Gas",
+    fireType:"liquidos",
+    clase:"B",
+    imagen:"https://i.ibb.co/m5dsKN7g/glp.png"
+  },
+
+  // ===== CLASE C =====
+  {
+    texto:"⚡ Tablero eléctrico industrial en combustión",
+    fireType:"electrico",
+    clase:"C",
+    imagen:"https://i.ibb.co/MxYQZdqL/Tablero-electrico-antes-1.jpg"
+  },
+  {
+    texto:"💻 Computador Incendiado",
+    fireType:"electrico",
+    clase:"C",
+    imagen:"https://i.ibb.co/gZ0nmN0T/electrico.png"
+  },
+  {
+    texto:"🔌 Regleta eléctrica sobrecargada ardiendo",
+    fireType:"electrico",
+    clase:"C",
+    imagen:"https://i.ibb.co/39WLysQ9/multitoma.png"
+  },
+  {
+    texto:"🏭 Rack de servidores en llamas",
+    fireType:"electrico",
+    clase:"C",
+    imagen:"https://i.ibb.co/qYRs2QK3/rack-servidores.jpg"
+  },
+
+  // ===== CLASE K =====
+  {
+    texto:"🍳 Aceite vegetal ardiendo en cocina industrial",
+    fireType:"cocina",
+    clase:"K",
+    imagen:"https://i.ibb.co/FqgLsMnS/COCINA-INDUSTRIAL-1080x675.jpg"
+  },
+  {
+    texto:"🍟 Freidora industrial en llamas",
+    fireType:"cocina",
+    clase:"K",
+    imagen:"https://i.ibb.co/xtCLBV90/freidora.jpg"
+  },
+  {
+    texto:"🥘 Sartén con grasa animal en combustión",
+    fireType:"cocina",
+    clase:"K",
+    imagen:"https://i.ibb.co/s7Nf7y5/una-sarten-en-llamas.jpg"
+  },
+  {
+    texto:"🍔 campana extractora con acumulación de grasa ardiendo",
+    fireType:"cocina",
+    clase:"K",
+    imagen:"https://i.ibb.co/S7nwv77C/Kitchen.png"
+  },
+
+  // ===== CLASE D =====
+  {
+    texto:"🔩 viruta de Magnesio encendido en área de mantenimiento",
+    fireType:"metales",
+    clase:"D",
+    imagen:"https://i.ibb.co/DP0HGHxb/limadura-de-magnesio.jpg"
+  },
+  {
+    texto:"⚙️ Viruta de metal reactivo en combustión",
+    fireType:"metales",
+    clase:"D",
+    imagen:"https://i.ibb.co/BH5Xs9fm/magnesio.jpg"
+  },
+  {
+    texto:"🔧 Polvo de aluminio ardiendo",
+    fireType:"metales",
+    clase:"D",
+    imagen:"https://i.ibb.co/sJzR9NSf/polvo-de-aluminio.jpg"
+  },
+  {
+    texto:"🏗️ Planta de fabricación de baterías de litio incendiada",
+    fireType:"metales",
+    clase:"D",
+    imagen:"https://i.ibb.co/tPNwBhyP/litio.jpg"
+  }
+];
+
+
+const compatibility = {
+  A:["papel"],
+  BC:["liquidos"],
+  ABC:["papel","liquidos","electrico"],
+  C:["electrico"],
+  K:["cocina"],
+  D:["metales"]
+};
+
+let estado={
+  puntaje:0,
+  nivel:1,
+  vidas:3,
+  caso:null,
+  selectedExt:null,
+  fuego:100,
+  arrastrando:false
+};
+let indiceCaso = 0;
+
+/*************** DOM ****************/
+const casoBox=document.getElementById('casoBox');
+const progresoEl = document.getElementById('progreso');
+const textoCasoEl = document.getElementById('textoCaso');
+const puntajeEl=document.getElementById('puntaje');
+const nivelEl=document.getElementById('nivel');
+const vidasEl=document.getElementById('vidas');
+const toast=document.getElementById('toast');
+const extintores=document.querySelectorAll('.extintor');
+const canvas=document.getElementById('fireCanvas');
+const ctx=canvas.getContext('2d');
+
+/*************** FUEGO ****************/
+/*************** FUEGO ANIMADO ****************/
+let particulas=[];
+let spray=[];
+let mouse={x:0,y:0};
+let fondo = new Image();
+
+
+function crearFuego(){
+  particulas=[];
+  for(let i=0;i<100;i++){
+    particulas.push({
+      x:canvas.width/2 + Math.random()*160 - 80,
+      y:canvas.height/2 + Math.random()*160 - 80,
+      r:Math.random()*10 + 4,
+      vy:Math.random()*1.5 + 0.5,
+      a:Math.random()*0.6 + 0.4
+    });
+  }
+}
+function crearSpray(){
+  for(let i=0;i<6;i++){
+    spray.push({
+      x:mouse.x,
+      y:mouse.y,
+      vx:(Math.random()-0.5)*4,
+      vy:-Math.random()*6-2,
+      life:30
+    });
+  }
+}
+
+function dibujarFuego(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // 🏢 ESCENARIO
+  if(fondo.complete){
+    ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
+  }
+
+  // 🔥 FUEGO
+  particulas.forEach(p=>{
+    ctx.fillStyle = `rgba(255,140,0,${p.a*(estado.fuego/100)})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r*(estado.fuego/100), 0, Math.PI*2);
+    ctx.fill();
+    p.y -= p.vy;
+    if(p.y < canvas.height/2 - 140){
+      p.y = canvas.height/2 + 140;
+    }
+  });
+
+  // 🧯 SPRAY
+  spray.forEach((s,i)=>{
+    ctx.fillStyle='rgba(220,220,220,0.8)';
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,3,0,Math.PI*2);
+    ctx.fill();
+    s.x += s.vx;
+    s.y += s.vy;
+    s.life--;
+    if(s.life<=0) spray.splice(i,1);
+  });
+}
+
+
+function animar(){
+  dibujarFuego();
+  requestAnimationFrame(animar);
+
+}
+
+/*************** UTIL ****************/
+/*************** CONFETI ****************/
+let confetti = [];
+let confettiCtx;
+let confettiCanvas;
+
+function iniciarConfeti(){
+  confettiCanvas = document.getElementById('confettiCanvas');
+  confettiCtx = confettiCanvas.getContext('2d');
+
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+
+  confetti = [];
+  for(let i=0;i<150;i++){
+    confetti.push({
+      x:Math.random()*confettiCanvas.width,
+      y:Math.random()*confettiCanvas.height,
+      r:Math.random()*6+3,
+      vy:Math.random()*3+2,
+      color:`hsl(${Math.random()*360},100%,50%)`
+    });
+  }
+
+  requestAnimationFrame(animarConfeti);
+}
+
+function animarConfeti(){
+  confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+
+  confetti.forEach(p=>{
+    confettiCtx.fillStyle=p.color;
+    confettiCtx.beginPath();
+    confettiCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    confettiCtx.fill();
+    p.y+=p.vy;
+    if(p.y>confettiCanvas.height) p.y=0;
+  });
+
+  requestAnimationFrame(animarConfeti);
+}
+
+function toastMsg(msg){
+  toast.textContent=msg;
+  toast.style.display='block';
+  setTimeout(()=>toast.style.display='none',1400);
+}
+function mezclarCasos(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function cargarCaso(){
+  // Si ya no hay más casos → fin del entrenamiento
+if(indiceCaso >= casos.length){
+  canvas.style.pointerEvents = 'none';
+
+  document.getElementById('finalModal').style.display = 'flex';
+  iniciarConfeti();
+
+  return;
+}
+
+  // Tomar el caso actual
+  estado.caso = casos[indiceCaso];
+  indiceCaso++;
+
+  const total = casos.length;
+const actual = indiceCaso;
+
+progresoEl.textContent = `Incendio ${actual} de ${total}`;
+textoCasoEl.textContent = estado.caso.texto;
+
+  estado.fuego = 100 + (estado.nivel * 10);
+  estado.carga = 100;
+
+  crearFuego();
+
+  fondo.src = estado.caso.imagen;
+
+}
+
+function actualizar(){
+  puntajeEl.textContent=estado.puntaje;
+  nivelEl.textContent=estado.nivel;
+  vidasEl.textContent=estado.vidas;
+}
+
+function reiniciar(){
+document.getElementById('finalModal').style.display = 'none';
+  estado = {
+    puntaje:0,
+    nivel:1,
+    vidas:3,
+    caso:null,
+    selectedExt:null,
+    fuego:100,
+    carga:100,
+    arrastrando:false
+  };
+
+indiceCaso = 0;
+mezclarCasos(casos);
+
+
+  canvas.style.pointerEvents = 'auto';
+
+  cargarCaso();
+  actualizar();
+}
+
+
+
+function gameOver(){
+  estado.arrastrando = false;
+  estado.selectedExt = null;
+
+  extintores.forEach(e => e.classList.remove('selected'));
+
+  toastMsg('🚨 Juego terminado: sin vidas disponibles');
+
+  // Bloquear interacción
+  canvas.style.pointerEvents = 'none';
+
+  casoBox.textContent = '❌ ENTRENAMIENTO FINALIZADO – Reinicie para continuar';
+}
+
+
+function validarExtintor(){
+
+  if(!estado.caso){
+    console.warn('Caso no cargado aún');
+    return false;
+  }
+
+  const correcto = compatibility[estado.selectedExt]
+    .includes(estado.caso.fireType);
+
+  if(!correcto){
+    estado.vidas--;
+    actualizar();
+
+    const clase = estado.caso.clase || 'desconocida';
+    toastMsg(`❌ Extintor incorrecto. Incendio clase ${clase}`);
+
+    if(estado.vidas <= 0){
+      gameOver();
+    }
+
+    return false;
+  }
+
+  toastMsg(`✅ Extintor correcto para este tipo de fuego`);
+  return true;
+}
+
+/*************** SELECCIÓN DE EXTINTOR ****************/
+extintores.forEach(ext => {
+  ext.addEventListener('click', () => {
+
+    // Quitar selección previa
+    extintores.forEach(e => e.classList.remove('selected'));
+
+    // Marcar seleccionado
+    ext.classList.add('selected');
+
+    // Guardar tipo de extintor
+    estado.selectedExt = ext.dataset.ext;
+
+    toastMsg(`🧯 Extintor ${estado.selectedExt} seleccionado`);
+  });
+});
+
+/*************** INTERACCIÓN ****************/
+canvas.addEventListener('pointerdown', () => {
+  if (!estado.selectedExt) {
+    toastMsg('⚠️ Selecciona un extintor');
+    return;
+  }
+  if (!validarExtintor()) return;
+  estado.arrastrando = true;
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if (!estado.arrastrando) return;
+
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+
+  crearSpray();
+  estado.fuego -= 1.5;
+
+  if (estado.fuego <= 0) {
+    estado.fuego = 0;
+    estado.arrastrando = false;
+    toastMsg('🔥 Incendio controlado');
+    estado.puntaje += 30;
+    estado.nivel++;
+    actualizar();
+    setTimeout(cargarCaso, 800);
+  }
+});
+
+canvas.addEventListener('pointerup', () => {
+  estado.arrastrando = false;
+});
+
+
+/*************** BOTONES ****************/
+document.getElementById('reiniciar').onclick=reiniciar;
+document.getElementById('siguiente').onclick=cargarCaso;
+/*************** INTRO ****************/
+const introModal = document.getElementById('introModal');
+const btnIniciar = document.getElementById('btnIniciar');
+
+// Bloquear interacción hasta iniciar
+canvas.style.pointerEvents = 'none';
+
+btnIniciar.addEventListener('click', () => {
+  introModal.style.display = 'none';
+  canvas.style.pointerEvents = 'auto';
+});
+
+
+/*************** INIT ****************/
+mezclarCasos(casos);   // 🔀 desordenar escenarios
+cargarCaso();
+actualizar();
+animar();
+
+
+/* ===== INTRO ===== */
+function cerrarIntro(){
+  document.getElementById('intro').style.display = 'none';
+}
+
+</script>
+</body>
+</html>
