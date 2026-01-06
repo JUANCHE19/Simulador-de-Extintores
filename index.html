@@ -68,11 +68,13 @@ h1{ font-size:1.1rem; color:#fff; margin:0 }
 
 main{
   max-width:1100px;
-  margin:10px auto;
+  margin:6px auto;
   display:grid;
   grid-template-columns:1fr 380px;
-  gap:16px;
+  gap:12px;
+  height:calc(100vh - 140px); /* 👈 CLAVE */
 }
+
 
 @media(max-width:900px){ main{ grid-template-columns:1fr; } }
 
@@ -204,6 +206,54 @@ button.secondary{ background:#333; color:var(--muted) }
   color:#fff;
   font-weight:700;
   cursor:pointer;
+}
+
+/* ===== AJUSTE DE ALTURA PARA CELULARES ===== */
+@media (max-width: 768px) {
+
+  body {
+    height: 100vh;
+  }
+
+  main {
+    margin: 6px auto;
+    gap: 10px;
+  }
+
+  /* Reducir altura del canvas */
+  #fireCanvas {
+    max-height: 48vh;
+    width: 100%;
+  }
+
+  /* Asegurar que el contenedor no crezca de más */
+  #fireWrap {
+    max-height: 50vh;
+  }
+
+  /* Panel de extintores más compacto */
+  .panel-right {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  /* Extintores más pequeños */
+  .extintor {
+    width: 70px;
+    padding: 4px;
+  }
+
+  .ext-img {
+    width: 48px;
+  }
+
+  /* Texto del caso más compacto */
+  #casoBox {
+    min-height: 50px;
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
 }
 
 </style>
