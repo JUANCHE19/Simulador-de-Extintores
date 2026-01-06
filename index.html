@@ -2,7 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no"/>
 <title>Centro de Formación y Entrenamiento – Bomberos Yumbo | Simulador de Extintores</title>
 
 <style>
@@ -13,7 +17,20 @@
   --muted:#bdbdbd;
 }
 
-*{ box-sizing:border-box }
+*{
+  box-sizing:border-box;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+html, body {
+  margin:0;
+  height:100%;
+  overflow:hidden;
+  touch-action:none;
+  overscroll-behavior:none;
+}
+
 /* === BLOQUEO TÁCTIL PARA MÓVILES === */
 html, body {
   touch-action: none;
@@ -226,7 +243,9 @@ button.secondary{ background:#333; color:var(--muted) }
 </div>
 
   <div id="fireWrap">
-    <canvas id="fireCanvas" width="720" height="480"></canvas>
+    <canvas id="fireCanvas" width="720" height="480"
+        style="touch-action:none;"></canvas>
+
   </div>
 </section>
 
@@ -780,6 +799,23 @@ function cerrarIntro(){
 document.addEventListener('touchmove', function(e){
   e.preventDefault();
 }, { passive:false });
+
+// === BLOQUEO TOTAL DE GESTOS EN MÓVIL ===
+document.addEventListener('touchstart', function(e){
+  e.preventDefault();
+}, { passive:false });
+
+document.addEventListener('touchmove', function(e){
+  e.preventDefault();
+}, { passive:false });
+
+document.addEventListener('gesturestart', function(e){
+  e.preventDefault();
+});
+
+document.addEventListener('contextmenu', function(e){
+  e.preventDefault();
+});
 
 </script>
 </body>
