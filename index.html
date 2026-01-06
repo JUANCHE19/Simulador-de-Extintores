@@ -14,6 +14,18 @@
 }
 
 *{ box-sizing:border-box }
+/* === BLOQUEO TÁCTIL PARA MÓVILES === */
+html, body {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+canvas, button, .extintor {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 
 body{
   margin:0;
@@ -698,7 +710,9 @@ extintores.forEach(ext => {
 });
 
 /*************** INTERACCIÓN ****************/
-canvas.addEventListener('pointerdown', () => {
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+
   if (!estado.selectedExt) {
     toastMsg('⚠️ Selecciona un extintor');
     return;
@@ -708,6 +722,8 @@ canvas.addEventListener('pointerdown', () => {
 });
 
 canvas.addEventListener('pointermove', (e) => {
+  e.preventDefault();
+
   if (!estado.arrastrando) return;
 
   const rect = canvas.getBoundingClientRect();
@@ -760,6 +776,10 @@ animar();
 function cerrarIntro(){
   document.getElementById('intro').style.display = 'none';
 }
+// === BLOQUEAR SCROLL Y ZOOM EN MÓVIL ===
+document.addEventListener('touchmove', function(e){
+  e.preventDefault();
+}, { passive:false });
 
 </script>
 </body>
