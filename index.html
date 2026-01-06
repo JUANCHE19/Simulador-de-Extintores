@@ -253,7 +253,28 @@ button.secondary{ background:#333; color:var(--muted) }
     font-size: 0.8rem;
     padding: 8px;
   }
-@media (max-width: 768px) {
+  header{
+    flex-direction: column;
+    gap: 4px;
+    margin: 6px auto;
+  }
+
+  header h1{
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  #meta{
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.75rem;
+  }
+
+  .logo-header{
+    height: 38px;
+  }
+/* ===== AJUSTES SOLO PARA CELULARES ===== */
 
   header{
     flex-direction: column;
@@ -276,7 +297,27 @@ button.secondary{ background:#333; color:var(--muted) }
   .logo-header{
     height: 38px;
   }
-@media (max-width: 768px) {
+
+  main{
+    margin: 4px auto;
+    gap: 8px;
+    height: auto;
+  }
+
+  #fireWrap{
+    max-height: 42vh;
+  }
+
+  #fireCanvas{
+    max-height: 40vh;
+    width: 100%;
+  }
+
+  #casoBox{
+    min-height: 48px;
+    font-size: 0.75rem;
+    padding: 6px;
+  }
 
   .panel-right{
     padding: 6px;
@@ -299,26 +340,13 @@ button.secondary{ background:#333; color:var(--muted) }
   .ext-label{
     font-size: 0.65rem;
   }
-@media (max-width: 768px) {
+}
 
-  main{
-    margin: 4px auto;
-    gap: 8px;
-  }
-
-  #fireWrap{
-    max-height: 42vh;
-  }
-
-  #fireCanvas{
-    max-height: 40vh;
-  }
-
-  #casoBox{
-    min-height: 48px;
-    font-size: 0.75rem;
-    padding: 6px;
-  }
+/* === PERMITIR TOQUE EN EXTINTORES === */
+.extintor,
+.extintor * {
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 
@@ -326,18 +354,20 @@ button.secondary{ background:#333; color:var(--muted) }
 </head>
 
 <body>
+<!-- ===== INTRO 1: CÓMO JUGAR ===== -->
 <div class="intro-modal" id="intro">
   <div class="intro-box">
     <img src="https://i.ibb.co/ds9zCLdF/acevedo11.png" class="intro-mascota">
     <h2>¿Cómo jugar?</h2>
     <p>
-1️⃣ Elige el extintor correcto<br>
-2️⃣ Mantén clic y apunta al fuego<br>
-3️⃣ Evita perder vidas
+      1️⃣ Elige el extintor correcto<br>
+      2️⃣ Mantén clic y apunta al fuego<br>
+      3️⃣ Evita perder vidas
     </p>
-    <button onclick="cerrarIntro()">Iniciar</button>
+    <button onclick="irABienvenida()">Continuar</button>
   </div>
 </div>
+
 
 <header>
   <img src="https://www.bomberosyumbo.net.co/wp-content/uploads/2022/07/logo-bomberos-yumbo.png" class="logo-header" alt="Bomberos Yumbo">
@@ -911,19 +941,18 @@ animar();
 function cerrarIntro(){
   document.getElementById('intro').style.display = 'none';
 }
-// === BLOQUEAR SCROLL Y ZOOM EN MÓVIL ===
-document.addEventListener('touchmove', function(e){
+// === BLOQUEAR SCROLL SOLO SOBRE EL CANVAS ===
+canvas.addEventListener('touchmove', function(e){
   e.preventDefault();
 }, { passive:false });
 
-// === BLOQUEO TOTAL DE GESTOS EN MÓVIL ===
-document.addEventListener('gesturestart', function(e){
-  e.preventDefault();
-});
+// ❌ NO bloquear gestos globales
+// ❌ NO bloquear contextmenu
 
-document.addEventListener('contextmenu', function(e){
-  e.preventDefault();
-});
+function irABienvenida(){
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('introModal').style.display = 'flex';
+}
 
 </script>
 </body>
