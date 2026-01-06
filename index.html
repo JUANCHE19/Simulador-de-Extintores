@@ -253,8 +253,74 @@ button.secondary{ background:#333; color:var(--muted) }
     font-size: 0.8rem;
     padding: 8px;
   }
+@media (max-width: 768px) {
 
+  header{
+    flex-direction: column;
+    gap: 4px;
+    margin: 6px auto;
+  }
+
+  header h1{
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  #meta{
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.75rem;
+  }
+
+  .logo-header{
+    height: 38px;
+  }
+@media (max-width: 768px) {
+
+  .panel-right{
+    padding: 6px;
+    gap: 6px;
+  }
+
+  #extintoresWrap{
+    gap: 6px;
+  }
+
+  .extintor{
+    width: 64px;
+    padding: 4px;
+  }
+
+  .ext-img{
+    width: 42px;
+  }
+
+  .ext-label{
+    font-size: 0.65rem;
+  }
+@media (max-width: 768px) {
+
+  main{
+    margin: 4px auto;
+    gap: 8px;
+  }
+
+  #fireWrap{
+    max-height: 42vh;
+  }
+
+  #fireCanvas{
+    max-height: 40vh;
+  }
+
+  #casoBox{
+    min-height: 48px;
+    font-size: 0.75rem;
+    padding: 6px;
+  }
 }
+
 
 </style>
 </head>
@@ -862,5 +928,3 @@ document.addEventListener('contextmenu', function(e){
 </script>
 </body>
 </html>
-
-
